@@ -1,0 +1,82 @@
+{% extends "layout.html" %}
+
+{% block title %}Detalles del Estudiante{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .student-container {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .student-info {
+        margin-bottom: 20px;
+    }
+    .student-info p {
+        margin: 10px 0;
+        font-size: 16px;
+    }
+    .student-info strong {
+        font-weight: bold;
+        display: inline-block;
+        width: 150px;
+    }
+    .button-container {
+        margin-top: 30px;
+        text-align: center;
+    }
+    .button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 0 10px;
+    }
+    .button:hover {
+        background-color: #45a049;
+    }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2196F3;
+        text-decoration: none;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('students_list') }}" class="back-link">← Volver a lista de estudiantes</a>
+    
+    <h1>Detalles del Estudiante</h1>
+    
+    <div class="student-container">
+        <div class="student-info">
+            <p><strong>Nombre:</strong> {{ student.first_name }} {{ student.last_name }}</p>
+            <p><strong>Número:</strong> {{ student.number }}</p>
+            <p><strong>Correo de Padres:</strong> {{ student.parent_email }}</p>
+            <p><strong>Fecha de Registro:</strong> {{ student.registration_date.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+        </div>
+        
+        <div class="button-container">
+            <a href="{{ url_for('attendance', student_number=student.number) }}" class="button">Ver Asistencia</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Control Escolar+ | Inicio{% endblock %}
+
+{% block content %}
+<div class="landing-container">
+    <div class="logo-container">
+        <img src="{{ url_for('static', filename='images/logo_controlescolar.jpg') }}" alt="Control Escolar+ Logo" class="app-logo">
+    </div>
+    
+    <h1>Control Escolar+</h1>
+    <p>Sistema de gestión de asistencia escolar</p>
+    
+    <div class="button-container">
+        <a href="{{ url_for('login', user_type='student') }}" class="btn btn-primary">Acceso Estudiantes</a>
+        <a href="{{ url_for('login', user_type='admin') }}" class="btn btn-secondary">Acceso Administrador</a>
+        <a href="{{ url_for('register') }}" class="btn btn-outline">Registrar Estudiante</a>
+    </div>
+</div>
+{% endblock %}

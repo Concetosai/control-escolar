@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Control Escolar{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {% block styles %}{% endblock %}
+    <style>
+        /* WhatsApp Floating Button Styles */
+        .whatsapp-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+        
+        .whatsapp-button {
+            display: flex;
+            align-items: center;
+            background-color: #25D366;
+            color: white;
+            border-radius: 50px;
+            padding: 10px 20px;
+            text-decoration: none;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .whatsapp-button:hover {
+            background-color: #128C7E;
+            transform: scale(1.05);
+        }
+        
+        .whatsapp-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .whatsapp-text {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    {% block content %}{% endblock %}
+    
+    <!-- WhatsApp Floating Buttons -->
+    <div class="whatsapp-container">
+        <a href="https://wa.me/528332892730?text=Hola,%20me%20interesa%20obtener%20información%20sobre%20ventas" class="whatsapp-button" target="_blank">
+            <i class="fab fa-whatsapp whatsapp-icon"></i>
+            <span class="whatsapp-text">Ventas</span>
+        </a>
+        <a href="https://wa.me/528332892730?text=Hola,%20necesito%20soporte%20técnico" class="whatsapp-button" target="_blank">
+            <i class="fab fa-whatsapp whatsapp-icon"></i>
+            <span class="whatsapp-text">Soporte Técnico</span>
+        </a>
+    </div>
+</body>
+</html>

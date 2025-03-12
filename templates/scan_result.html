@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block title %}Resultado de Escaneo{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .result-container {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+        text-align: center;
+    }
+    .success-message {
+        color: #4CAF50;
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .student-info {
+        margin-bottom: 20px;
+    }
+    .time-info {
+        color: #666;
+        font-size: 18px;
+        margin-bottom: 20px;
+    }
+    .email-status {
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 4px;
+    }
+    .email-sent {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+    .email-failed {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+    .button-container {
+        margin-top: 30px;
+    }
+    .button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 0 10px;
+    }
+    .button:hover {
+        background-color: #45a049;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Resultado de Escaneo</h1>
+    
+    <div class="result-container">
+        <div class="success-message">{{ message }}</div>
+        
+        <div class="student-info">
+            <p>Estudiante: {{ student_number }}</p>
+        </div>
+        
+        <div class="time-info">
+            <p>Hora: {{ time }}</p>
+        </div>
+        
+        <div class="button-container">
+            <a href="{{ url_for('scan') }}" class="button">Escanear Otro</a>
+            <a href="{{ url_for('students_list') }}" class="button">Volver a Lista</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

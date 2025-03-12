@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>{% block title %}Control Escolar+{% endblock %}</title>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/mobile.css') }}">
+    {% block extra_css %}{% endblock %}
+    <style>
+        /* Improved footer positioning */
+        .app-footer {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            z-index: 1000;
+            background: transparent;
+            padding: 0;
+            border: none;
+        }
+        
+        .contact-section {
+            display: inline-block;
+            margin: 0 auto;
+        }
+        
+        .whatsapp-btn {
+            display: inline-block;
+            background-color: #25D366;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .whatsapp-btn:hover {
+            background-color: #128C7E;
+            transform: scale(1.05);
+        }
+        
+        .whatsapp-btn i {
+            margin-right: 8px;
+            font-size: 20px;
+        }
+        
+        /* Hide the heading to make it cleaner */
+        .contact-section h3 {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="aspect-ratio-container">
+            <div class="aspect-ratio-content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer with single WhatsApp contact -->
+    <footer class="app-footer">
+        <div class="contact-section">
+            <h3>Ventas y Soporte Técnico</h3>
+            <a href="https://wa.me/+528332892730" class="whatsapp-btn">
+                <i class="fab fa-whatsapp"></i> Contactar por WhatsApp
+            </a>
+        </div>
+    </footer>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

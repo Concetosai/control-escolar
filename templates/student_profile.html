@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+
+{% block title %}Perfil de Estudiante{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    .profile-container {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .student-info {
+        margin-bottom: 20px;
+    }
+    .student-info p {
+        margin: 5px 0;
+        font-size: 16px;
+    }
+    .student-info strong {
+        font-weight: bold;
+    }
+    .qr-container {
+        text-align: center;
+        margin: 20px 0;
+    }
+    .qr-container img {
+        max-width: 200px;
+    }
+    .button-container {
+        text-align: center;
+        margin-top: 20px;
+    }
+    .button {
+        display: inline-block;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 0 10px;
+    }
+    .button:hover {
+        background-color: #45a049;
+    }
+    .logout-button {
+        background-color: #f44336;
+    }
+    .logout-button:hover {
+        background-color: #d32f2f;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Perfil de Estudiante</h1>
+    
+    <div class="profile-container">
+        <div class="student-info">
+            <p><strong>Nombre:</strong> {{ first_name }} {{ last_name }}</p>
+            <p><strong>Número de Estudiante:</strong> {{ student_number }}</p>
+        </div>
+        
+        <div class="qr-container">
+            <h2>Tu Código QR</h2>
+            <p>Muestra este código al entrar y salir de la escuela</p>
+            <!-- Remove this completely, including the comments -->
+            <img src="{{ url_for('get_qr', first_name=first_name, last_name=last_name, number=number) }}" alt="QR Code">
+        </div>
+        
+        <div class="button-container">
+            <a href="{{ url_for('attendance', student_number=student_number) }}" class="button">Ver Registro de Asistencia</a>
+            <a href="{{ url_for('logout') }}" class="button logout-button">Cerrar Sesión</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

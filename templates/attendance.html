@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}Registro de Asistencia{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .attendance-container {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .student-info {
+        margin-bottom: 20px;
+        text-align: center;
+    }
+    .student-info h2 {
+        margin-bottom: 5px;
+    }
+    .student-info p {
+        color: #666;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+    th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+    tr:hover {
+        background-color: #f5f5f5;
+    }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2196F3;
+        text-decoration: none;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+    .no-records {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    {% if session.is_admin %}
+    <a href="{{ url_for('students_list') }}" class="back-link">← Volver a lista de estudiantes</a>
+    {% else %}
+    <a href="{{ url_for('student_profile') }}" class="back-link">← Volver a perfil</a>
+    {% endif %}
+    
+    <h1>Registro de Asistencia</h1>
+    
+    <div class="attendance-container">
+        <div class="student-info">
+            <h2>{{ first_name }} {{ last_name }}</h2>
+            <p>Número de Estudiante: {{ student_number }}</p>
+        </div>
+        
+        {% if records %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Entrada</th>
+                    <th>Salida</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for entry, exit in records %}
+                <tr>
+                    <td>{{ entry.strftime('%Y-%m-%d') }}</td>
+                    <td>{{ entry.strftime('%H:%M:%S') }}</td>
+                    <td>{% if exit %}{{ exit.strftime('%H:%M:%S') }}{% else %}Pendiente{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-records">
+            <p>No hay registros de asistencia para este estudiante.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

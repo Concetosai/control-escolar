@@ -1,0 +1,134 @@
+{% extends "layout.html" %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block styles %}
+<style>
+    .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+    .form-container {
+        background-color: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    input[type="text"],
+    input[type="password"] {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    input[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    input[type="submit"]:hover {
+        background-color: #45a049;
+    }
+    h1 {
+        text-align: center;
+        color: #333;
+    }
+    .register-link {
+        text-align: center;
+        margin-top: 15px;
+    }
+    .register-link a {
+        color: #2196F3;
+        text-decoration: none;
+    }
+    .register-link a:hover {
+        text-decoration: underline;
+    }
+    .error-message {
+        background-color: #ffebee;
+        color: #d32f2f;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    .login-type {
+        text-align: center;
+        margin-bottom: 20px;
+        color: #333;
+        font-weight: bold;
+        font-size: 1.2em;
+    }
+    .back-link {
+        display: inline-block;
+        margin-bottom: 20px;
+        color: #2196F3;
+        text-decoration: none;
+    }
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <a href="{{ url_for('landing') }}" class="back-link">← Volver a inicio</a>
+    
+    <h1>Iniciar Sesión</h1>
+    
+    <div class="login-type">
+        {% if user_type == 'admin' %}
+        Acceso Administrativo
+        {% else %}
+        Acceso Estudiante
+        {% endif %}
+    </div>
+
+    <div class="form-container">
+        <form method="POST" action="{{ form_action }}">
+            {{ form.hidden_tag() }}
+            
+            <div class="form-group">
+                {% if user_type == 'admin' %}
+                <label for="student_number">Usuario Administrativo</label>
+                {% else %}
+                <label for="student_number">Número de Estudiante</label>
+                {% endif %}
+                {{ form.student_number(class="form-control") }}
+            </div>
+            
+            <div class="form-group">
+                {{ form.password.label }}
+                {{ form.password(class="form-control") }}
+            </div>
+
+            {% if error %}
+            <div class="error-message">{{ error }}</div>
+            {% endif %}
+            
+            {{ form.submit(class="submit-button") }}
+        </form>
+        
+        {% if user_type != 'admin' %}
+        <div class="register-link">
+            <p>¿No tienes cuenta? <a href="{{ url_for('register') }}">Regístrate aquí</a></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
