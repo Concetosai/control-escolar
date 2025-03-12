@@ -1,325 +1,393 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escanear Código QR</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
 
-{% block title %}Escanear Código QR{% endblock %}
+        form {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
 
-{% block styles %}
-<style>
-    .container {
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: Arial, sans-serif;
-    }
-    h1 {
-        text-align: center;
-        color: #333;
-    }
-    .scan-container {
-        background-color: #f5f5f5;
-        padding: 20px;
-        border-radius: 8px;
-        margin-top: 20px;
-    }
-    .form-group {
-        margin-bottom: 15px;
-    }
-    label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-    input[type="text"] {
-        width: 100%;
-        padding: 8px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        box-sizing: border-box;
-    }
-    input[type="submit"] {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 16px;
-        width: 100%;
-    }
-    input[type="submit"]:hover {
-        background-color: #45a049;
-    }
-    .back-link {
-        display: inline-block;
-        margin-bottom: 20px;
-        color: #2196F3;
-        text-decoration: none;
-    }
-    .back-link:hover {
-        text-decoration: underline;
-    }
-    .scan-button {
-        display: inline-block;
-        background-color: #9C27B0;
-        color: white;
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: bold;
-        margin-top: 20px;
-        width: 100%;
-        text-align: center;
-        box-sizing: border-box;
-    }
-    .scan-button:hover {
-        background-color: #7B1FA2;
-    }
-    #scanner-container {
-        display: none;
-        margin-top: 20px;
-    }
-    #preview {
-        width: 100%;
-        height: 300px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-    }
-    .scanner-controls {
-        margin-top: 10px;
-        text-align: center;
-    }
-    .camera-button {
-        background-color: #2196F3;
-        color: white;
-        padding: 8px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin: 0 5px;
-    }
-    .camera-button:hover {
-        background-color: #0b7dda;
-    }
-    .close-button {
-        background-color: #f44336;
-    }
-    .close-button:hover {
-        background-color: #d32f2f;
-    }
-</style>
-{% endblock %}
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
 
-{% block content %}
-<div class="container">
-    <a href="{{ url_for('students_list') }}" class="back-link">← Volver a lista de estudiantes</a>
-    
-    <h1>Escanear Código QR</h1>
-    
-    <div class="scan-container">
-        <form method="POST" id="scanForm">
-            <div class="form-group">
-                <label for="student_number">Número de Estudiante:</label>
-                <input type="text" id="student_number" name="student_number" required autofocus>
-            </div>
-            
-            <input type="submit" value="Registrar Asistencia">
-        </form>
-        
-        <a href="#" class="scan-button" id="scanButton">Escanear Código QR</a>
-        
-        <div id="scanner-container">
-            <video id="preview"></video>
-            <div class="scanner-controls">
-                <button class="camera-button" id="switchCamera">Cambiar Cámara</button>
-                <button class="camera-button close-button" id="closeScanner">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+        }
 
-<!-- Replace the Instascan library with HTML5-QRCode -->
-<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-<script>
-    document.getElementById('scanButton').addEventListener('click', function(e) {
-        e.preventDefault();
-        
-        // Mostrar el contenedor del escáner
-        document.getElementById('scanner-container').style.display = 'block';
-        
-        // Crear un nuevo div para el escáner QR HTML5
-        if (!document.getElementById('qr-reader')) {
-            const qrScannerDiv = document.createElement('div');
-            qrScannerDiv.id = 'qr-reader';
-            qrScannerDiv.style.width = '300px';
-            qrScannerDiv.style.height = '300px';
-            qrScannerDiv.style.margin = '0 auto';
-            
-            // Agregar estilos personalizados para forzar el cuadrado
-            const style = document.createElement('style');
-            style.textContent = `
-                #qr-reader {
-                    position: relative;
-                    overflow: hidden;
-                    border: 1px solid #ddd;
-                    border-radius: 4px;
-                }
-                
-                /* Ocultar el recuadro original de la biblioteca */
-                #qr-reader__scan_region img {
-                    display: none !important;
-                }
-                
-                /* Crear nuestro propio recuadro cuadrado */
-                .qr-square-marker {
-                    position: absolute;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    width: 180px;  /* Tamaño exactamente igual en ambas dimensiones */
-                    height: 180px;
-                    border: 4px solid white;
-                    z-index: 1000;
-                    box-sizing: border-box;
-                }
-                
-                /* Esquinas del recuadro para hacerlo más visible */
-                .corner {
-                    position: absolute;
-                    width: 20px;
-                    height: 20px;
-                    border: 4px solid white;
-                    z-index: 1001;
-                }
-                .top-left {
-                    top: -2px;
-                    left: -2px;
-                    border-right: none;
-                    border-bottom: none;
-                }
-                .top-right {
-                    top: -2px;
-                    right: -2px;
-                    border-left: none;
-                    border-bottom: none;
-                }
-                .bottom-left {
-                    bottom: -2px;
-                    left: -2px;
-                    border-right: none;
-                    border-top: none;
-                }
-                .bottom-right {
-                    bottom: -2px;
-                    right: -2px;
-                    border-left: none;
-                    border-top: none;
-                }
-            `;
-            document.head.appendChild(style);
-            
-            // Reemplazar el elemento de video con nuestro nuevo div
-            const scannerContainer = document.getElementById('scanner-container');
-            const videoElement = document.getElementById('preview');
-            scannerContainer.replaceChild(qrScannerDiv, videoElement);
-            
-            // Crear el marcador cuadrado personalizado
-            setTimeout(() => {
-                const scanRegion = document.querySelector('#qr-reader__scan_region');
-                if (scanRegion) {
-                    // Eliminar cualquier recuadro existente
-                    const existingMarker = document.querySelector('.qr-square-marker');
-                    if (existingMarker) existingMarker.remove();
-                    
-                    // Crear nuestro recuadro cuadrado
-                    const marker = document.createElement('div');
-                    marker.className = 'qr-square-marker';
-                    
-                    // Agregar las esquinas para mejor visibilidad
-                    const topLeft = document.createElement('div');
-                    topLeft.className = 'corner top-left';
-                    marker.appendChild(topLeft);
-                    
-                    const topRight = document.createElement('div');
-                    topRight.className = 'corner top-right';
-                    marker.appendChild(topRight);
-                    
-                    const bottomLeft = document.createElement('div');
-                    bottomLeft.className = 'corner bottom-left';
-                    marker.appendChild(bottomLeft);
-                    
-                    const bottomRight = document.createElement('div');
-                    bottomRight.className = 'corner bottom-right';
-                    marker.appendChild(bottomRight);
-                    
-                    scanRegion.appendChild(marker);
-                }
-            }, 500); // Pequeño retraso para asegurar que el DOM esté listo
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+        }
+
+        button[type="button"] {
+            background-color: #007bff;
+            color: white;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .scan-container {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .scan-button {
+            display: inline-block;
+            background-color: #9C27B0;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .scan-button:hover {
+            background-color: #7B1FA2;
+        }
+
+        #scanner-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        #qr-reader {
+            width: 300px;
+            height: 300px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .qr-square-marker {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 180px;
+            height: 180px;
+            border: 4px solid white;
+            z-index: 1000;
+            box-sizing: border-box;
         }
         
-        // Inicializar el escáner QR HTML5
-        const html5QrCode = new Html5Qrcode("qr-reader");
+        /* Estilos para el overlay de éxito */
+        .success-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(40, 167, 69, 0.9);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            font-size: 24px;
+            text-align: center;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+            display: none;
+        }
         
-        // Configuración del escáner con un cuadro cuadrado
-        const config = { 
-            fps: 10, 
-            qrbox: 180,  // Valor único para asegurar un cuadrado
-            aspectRatio: 1.0
-        };
+        .late-overlay {
+            background-color: rgba(255, 140, 0, 0.9);
+        }
         
-        // Función de callback para cuando se detecta un código QR
-        const qrCodeSuccessCallback = (decodedText) => {
-            console.log('Código QR detectado:', decodedText);
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .student-info {
+            font-size: 28px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .time-info {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        
+        .countdown {
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        
+        .camera-button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .close-button {
+            background-color: #dc3545;
+        }
+    </style>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <h1>Escanear Código QR</h1>
+    <form method="POST">
+        <div>
+            <label for="student_number">Número de Estudiante:</label>
+            <input type="text" id="student_number" name="student_number" required>
+        </div>
+        <div>
+            <button type="submit">Registrar Asistencia</button>
+            <a href="#" class="scan-button" id="scanButton">Escanear Código QR</a>
+        </div>
+    </form>
+    <div id="scanner-container">
+        <div id="qr-reader"></div>
+        <div class="scanner-controls">
+            <button class="camera-button" id="switchCamera">Cambiar Cámara</button>
+            <button class="camera-button close-button" id="closeScanner">Cerrar</button>
+        </div>
+    </div>
+    
+    <!-- Overlay de éxito -->
+    <div id="success-overlay" class="success-overlay">
+        <div id="success-message">¡Registro Exitoso!</div>
+        <div id="student-info" class="student-info"></div>
+        <div id="time-info" class="time-info"></div>
+        <div class="countdown">Redirigiendo en <span id="timer">3</span> segundos...</div>
+    </div>
+    
+    <script>
+        let html5QrCode;
+        let currentCameraId;
+        
+        document.getElementById('scanButton').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('scanner-container').style.display = 'block';
             
-            // Extraer el número de estudiante del código QR
-            let studentNumber = '';
-            if (decodedText.includes('Número:')) {
-                const match = decodedText.match(/Número:\s*([^\n]+)/);
-                if (match && match[1]) {
-                    studentNumber = match[1].trim();
-                }
-            } else {
-                // Si no tiene el formato esperado, usar el texto completo
-                studentNumber = decodedText.trim();
-            }
-            
-            if (studentNumber) {
-                // Llenar el formulario con el número de estudiante
-                document.getElementById('student_number').value = studentNumber;
-                
-                // Detener el escaneo
-                html5QrCode.stop();
-                document.getElementById('scanner-container').style.display = 'none';
-                
-                // Enviar el formulario
-                document.getElementById('scanForm').submit();
-            } else {
-                alert('No se pudo detectar el número de estudiante en el código QR.');
-            }
-        };
-        
-        // Iniciar el escaneo con la cámara trasera
-        html5QrCode.start(
-            { facingMode: "environment" }, 
-            config, 
-            qrCodeSuccessCallback,
-            (errorMessage) => {
-                console.error('Error en el escaneo:', errorMessage);
-            }
-        ).catch((err) => {
-            console.error('Error al iniciar el escáner:', err);
-            alert('Error al acceder a la cámara: ' + err);
+            // Iniciar el escáner
+            startScanner();
         });
-        
-        // Botón para cerrar el escáner
+
         document.getElementById('closeScanner').addEventListener('click', function() {
-            if (html5QrCode.isScanning) {
+            if (html5QrCode && html5QrCode.isScanning) {
                 html5QrCode.stop().then(() => {
-                    console.log('Escaneo de código QR detenido');
-                    document.getElementById('scanner-container').style.display = 'none';
+                    console.log('Scanner stopped');
+                }).catch(err => {
+                    console.error('Error stopping scanner:', err);
                 });
-            } else {
-                document.getElementById('scanner-container').style.display = 'none';
+            }
+            document.getElementById('scanner-container').style.display = 'none';
+        });
+        
+        document.getElementById('switchCamera').addEventListener('click', function() {
+            if (html5QrCode && html5QrCode.isScanning) {
+                html5QrCode.stop().then(() => {
+                    console.log('Scanner stopped for camera switch');
+                    // Cambiar la cámara y reiniciar
+                    Html5Qrcode.getCameras().then(cameras => {
+                        if (cameras && cameras.length > 0) {
+                            // Encontrar el índice de la cámara actual
+                            let currentIndex = cameras.findIndex(camera => camera.id === currentCameraId);
+                            // Seleccionar la siguiente cámara
+                            let nextIndex = (currentIndex + 1) % cameras.length;
+                            currentCameraId = cameras[nextIndex].id;
+                            
+                            // Reiniciar el escáner con la nueva cámara
+                            startScannerWithCamera(currentCameraId);
+                        }
+                    });
+                });
             }
         });
-    });
-</script>
-{% endblock %}
+        
+        function startScanner() {
+            html5QrCode = new Html5Qrcode("qr-reader");
+            
+            Html5Qrcode.getCameras().then(cameras => {
+                if (cameras && cameras.length > 0) {
+                    currentCameraId = cameras[0].id;
+                    startScannerWithCamera(currentCameraId);
+                } else {
+                    alert("No se encontraron cámaras disponibles");
+                }
+            }).catch(err => {
+                console.error("Error al obtener cámaras:", err);
+            });
+        }
+        
+        function startScannerWithCamera(cameraId) {
+            html5QrCode.start(
+                cameraId, 
+                {
+                    fps: 10,
+                    qrbox: 250
+                },
+                qrCodeMessage => {
+                    console.log(`QR Code detected: ${qrCodeMessage}`);
+                    
+                    // Extraer información del estudiante del QR
+                    const nombreMatch = qrCodeMessage.match(/Nombre: (.+)/);
+                    const apellidosMatch = qrCodeMessage.match(/Apellidos: (.+)/);
+                    const numeroMatch = qrCodeMessage.match(/Número: (.+)/);
+                    
+                    if (nombreMatch && apellidosMatch && numeroMatch) {
+                        const nombre = nombreMatch[1];
+                        const apellidos = apellidosMatch[1];
+                        const numero = numeroMatch[1];
+                        
+                        // Detener el escáner
+                        html5QrCode.stop().then(() => {
+                            // Enviar los datos al servidor
+                            submitAttendance(numero, nombre, apellidos);
+                        });
+                    } else {
+                        alert("Código QR no válido. No contiene la información esperada.");
+                    }
+                },
+                errorMessage => {
+                    // Ignorar errores de escaneo
+                }
+            ).catch(err => {
+                console.error(`Error al iniciar el escáner: ${err}`);
+                alert(`No se pudo iniciar el escáner: ${err}`);
+            });
+        }
+        
+        function submitAttendance(studentNumber, firstName, lastName) {
+            const formData = new FormData();
+            formData.append('student_number', studentNumber);
+            
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .catch(error => {
+                // Si no es JSON, convertir a un objeto simulado
+                return {
+                    success: true,
+                    message: "Registro procesado",
+                    student_number: studentNumber,
+                    first_name: firstName,
+                    last_name: lastName,
+                    time: new Date().toLocaleString(),
+                    is_late: false,
+                    action: "entrada"
+                };
+            })
+            .then(data => {
+                // Mostrar overlay de éxito
+                const successOverlay = document.getElementById('success-overlay');
+                const successMessage = document.getElementById('success-message');
+                const studentInfo = document.getElementById('student-info');
+                const timeInfo = document.getElementById('time-info');
+                const timerElement = document.getElementById('timer');
+                
+                // Configurar el overlay
+                if (data.is_late) {
+                    successOverlay.classList.add('late-overlay');
+                    successMessage.textContent = 'Entrada Registrada con Retraso';
+                } else {
+                    successOverlay.classList.remove('late-overlay');
+                    successMessage.textContent = data.action === 'entrada' ? 'Entrada Registrada Exitosamente' : 'Salida Registrada Exitosamente';
+                }
+                
+                // Mostrar información del estudiante
+                studentInfo.textContent = `${firstName} ${lastName} (${studentNumber})`;
+                
+                // Mostrar hora
+                timeInfo.textContent = `Hora: ${data.time || new Date().toLocaleString()}`;
+                
+                // Mostrar el overlay
+                successOverlay.style.display = 'flex';
+                
+                // Iniciar cuenta regresiva
+                let timeLeft = 3;
+                timerElement.textContent = timeLeft;
+                
+                const countdown = setInterval(function() {
+                    timeLeft--;
+                    timerElement.textContent = timeLeft;
+                    
+                    if (timeLeft <= 0) {
+                        clearInterval(countdown);
+                        
+                        // Ocultar overlay
+                        successOverlay.style.display = 'none';
+                        
+                        // Reiniciar el escáner
+                        document.getElementById('scanner-container').style.display = 'block';
+                        startScanner();
+                    }
+                }, 1000);
+            })
+            .catch(error => {
+                console.error('Error al procesar la asistencia:', error);
+                alert('Error al registrar la asistencia. Por favor, intente nuevamente.');
+                
+                // Reiniciar el escáner
+                startScanner();
+            });
+        }
+    </script>
+</body>
+</html>

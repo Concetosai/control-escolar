@@ -59,6 +59,15 @@
     .logout-button:hover {
         background-color: #d32f2f;
     }
+    .student-number {
+        color: #28a745; /* Green color for highlighting */
+        font-weight: bold;
+        font-size: 20px; /* Larger font size */
+        background-color: #e8f5e9; /* Light green background for extra emphasis */
+        padding: 3px 6px; /* Add some padding */
+        border-radius: 4px; /* Rounded corners */
+        display: inline-block; /* Ensure padding works properly */
+    }
 </style>
 {% endblock %}
 
@@ -69,14 +78,13 @@
     <div class="profile-container">
         <div class="student-info">
             <p><strong>Nombre:</strong> {{ first_name }} {{ last_name }}</p>
-            <p><strong>Número de Estudiante:</strong> {{ student_number }}</p>
+            <p><strong>Número de Estudiante:</strong> <span class="student-number">{{ student_number }}</span></p>
         </div>
         
         <div class="qr-container">
             <h2>Tu Código QR</h2>
             <p>Muestra este código al entrar y salir de la escuela</p>
-            <!-- Remove this completely, including the comments -->
-            <img src="{{ url_for('get_qr', first_name=first_name, last_name=last_name, number=number) }}" alt="QR Code">
+            <img src="{{ qr_url }}" alt="Código QR"> <!-- Ensure the QR code URL is correctly set -->
         </div>
         
         <div class="button-container">

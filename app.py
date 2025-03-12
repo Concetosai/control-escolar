@@ -44,7 +44,6 @@ user_passwords = {}
 class StudentForm(FlaskForm):
     first_name = StringField('Nombre(s)', validators=[DataRequired()])
     last_name = StringField('Apellidos', validators=[DataRequired()])
-    number = StringField('Número de Estudiante', validators=[DataRequired()])
     parent_email = StringField('Correo de Padres/Tutores', validators=[DataRequired()])
     password = PasswordField('Contraseña', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('Registrar')
@@ -117,34 +116,56 @@ def scan():
                 return render_template('error.html', 
                     message="Error: Este estudiante no está registrado en el sistema.",
                     student_number=student_number)
-            # Línea corregida (eliminado el texto erróneo)
+            
+            # Get student data
+            student_data = registered_students[student_number]
+            first_name = student_data['first_name']
+            last_name = student_data['last_name']
+            
             current_time = datetime.now()
+            is_late = False
+            
+            # Check if entry is late (after 7:00 AM)
+            if current_time.hour > 7 or (current_time.hour == 7 and current_time.minute > 0):
+                is_late = True
+            
             if student_number not in attendance_records:
-                attendance_records[student_number] = {'entries': [], 'exits': []}
+                attendance_records[student_number] = {'entries': [], 'exits': [], 'late': []}
+            
             if not attendance_records[student_number]['entries'] or \
                len(attendance_records[student_number]['entries']) == len(attendance_records[student_number]['exits']):
                 attendance_records[student_number]['entries'].append(current_time)
-                message = "Entrada registrada"
+                attendance_records[student_number]['late'].append(is_late)
+                
+                if is_late:
+                    message = "Entrada registrada con retraso"
+                else:
+                    message = "Entrada registrada exitosamente"
+                
                 # Enviar correo de entrada
-                email_sent = send_attendance_email(student_number, "entrada")
+                email_sent = send_attendance_email(student_number, "entrada", is_late)
                 if email_sent:
                     message += " y notificación enviada a los padres"
                 else:
                     message += " pero no se pudo enviar notificación a los padres"
             else:
                 attendance_records[student_number]['exits'].append(current_time)
-                message = "Salida registrada"
+                message = "Salida registrada exitosamente"
                 # Enviar correo de salida
                 email_sent = send_attendance_email(student_number, "salida")
                 if email_sent:
                     message += " y notificación enviada a los padres"
                 else:
                     message += " pero no se pudo enviar notificación a los padres"
+            
             return render_template('scan_result.html', 
                                  time=current_time.strftime('%Y-%m-%d %H:%M:%S'),
                                  message=message,
                                  student_number=student_number,
-                                 email_sent=email_sent)  # Agregamos esta variable para usarla en la plantilla
+                                 first_name=first_name,
+                                 last_name=last_name,
+                                 email_sent=email_sent,
+                                 is_late=is_late)
     return render_template('scan.html')
 
 @app.route('/attendance/<student_number>')
@@ -247,19 +268,21 @@ def send_attendance_email(student_number, action):
         print(f"Error al enviar correo: {e}")
         return False
 
+# Function to generate student number
+def generate_student_number():
+    base_number = "TEC35-"  # Changed from previous prefix to TEC35-
+    next_number = len(registered_students) + 1
+    return f"{base_number}{next_number:03}"  # This formats the number with leading zeros (001, 002, etc.)
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = StudentForm()
     if form.validate_on_submit():
         student_first_name = form.first_name.data
         student_last_name = form.last_name.data
-        student_number = form.number.data
+        student_number = generate_student_number()  # Automatically generate student number
         password = form.password.data
         parent_email = form.parent_email.data
-        
-        if student_number in registered_students:
-            flash("Error: Este número de estudiante ya está registrado.")
-            return render_template('register.html', form=form)
         
         # Store student information
         registered_students[student_number] = {
@@ -279,10 +302,8 @@ def register():
         
         print(f"Registration successful for student {student_number}, redirecting to profile.")
         
-        # Make sure we're returning a redirect, not rendering a template
         return redirect(url_for('student_profile'))
     
-    # Debugging: Print validation errors if any
     if form.errors:
         print("Form validation errors:", form.errors)
     
