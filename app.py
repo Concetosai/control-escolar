@@ -1,10 +1,11 @@
 ...
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, session, jsonify
 from flask_wtf import FlaskForm
 from wtforms import StringField, SubmitField, PasswordField
 from wtforms.validators import DataRequired, Length
 import qrcode
 import io
+import os
 from datetime import datetime
 from functools import wraps
 
@@ -225,7 +226,7 @@ def home():
 
 # Agrega esta función para enviar correos
 # Modifica la función de envío de correos para incluir más información de depuración
-def send_attendance_email(student_number, action):
+def send_attendance_email(student_number, action, is_late=False):
     # Simple version that just logs and returns success
     print(f"Simulando envío de correo para estudiante {student_number}, acción: {action}")
     return True
@@ -246,7 +247,8 @@ def send_attendance_email(student_number, action):
             subject = f"Registro de {action} - Control Escolar"
             
             if action == "entrada":
-                body = f"Estimado padre/tutor,\n\nSu hijo(a) {student_name} ha registrado su entrada a la escuela a las {current_time}.\n\nSaludos cordiales,\nSistema de Control Escolar"
+                late_text = " con retraso" if is_late else ""
+                body = f"Estimado padre/tutor,\n\nSu hijo(a) {student_name} ha registrado su entrada{late_text} a la escuela a las {current_time}.\n\nSaludos cordiales,\nSistema de Control Escolar"
             else:
                 body = f"Estimado padre/tutor,\n\nSu hijo(a) {student_name} ha registrado su salida de la escuela a las {current_time}.\n\nSaludos cordiales,\nSistema de Control Escolar"
             
@@ -276,6 +278,28 @@ def generate_student_number():
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
+    if request.method == 'POST':
+        # Only try to access student_number if it's in the form
+        if 'student_number' in request.form:
+            student_number = request.form['student_number']
+            
+            # Handle image upload
+            if 'student_image' in request.files:
+                image = request.files['student_image']
+                if image.filename != '':
+                    # Get file extension
+                    _, ext = os.path.splitext(image.filename)
+                    # Save with student number as filename
+                    image_filename = f"{student_number}{ext}"
+                    image_path = os.path.join(app.static_folder, 'uploads', image_filename)
+                    
+                    # Create directory if it doesn't exist
+                    os.makedirs(os.path.dirname(image_path), exist_ok=True)
+                    
+                    # Save the image
+                    image.save(image_path)
+        
+        # Rest of your registration code
     form = StudentForm()
     if form.validate_on_submit():
         student_first_name = form.first_name.data
@@ -301,6 +325,22 @@ def register():
         session['is_admin'] = False
         
         print(f"Registration successful for student {student_number}, redirecting to profile.")
+        
+        # Handle image upload after student is registered
+        if 'student_image' in request.files:
+            image = request.files['student_image']
+            if image.filename != '':
+                # Get file extension
+                _, ext = os.path.splitext(image.filename)
+                # Save with student number as filename
+                image_filename = f"{student_number}{ext}"
+                image_path = os.path.join(app.static_folder, 'uploads', image_filename)
+                
+                # Create directory if it doesn't exist
+                os.makedirs(os.path.dirname(image_path), exist_ok=True)
+                
+                # Save the image
+                image.save(image_path)
         
         return redirect(url_for('student_profile'))
     
@@ -328,11 +368,14 @@ def student_profile():
                 exit_time = records['exits'][i] if i < len(records.get('exits', [])) else None
                 attendance_data.append((entry, exit_time))
                 
+        # Add this line to include the student's image if it exists
+        student_image = get_student_image(student_number)
+        
         return render_template('student_profile.html', 
-                              first_name=student_first_name,
-                              last_name=student_last_name,
+                              first_name=student_first_name, 
+                              last_name=student_last_name, 
                               student_number=student_number,
-                              number=student_number, 
+                              student_image=student_image,
                               qr_url=qr_url,
                               records=attendance_data)
     return redirect(url_for('login'))
@@ -364,7 +407,55 @@ def get_qr():
     img_io.seek(0)
     return send_file(img_io, mimetype='image/png')
 
-# Agregar al final del archivo
 # Al final del archivo app.py, añade o modifica:
+def get_student_image(student_number):
+    # Check if an image exists for this student
+    # This is a simple implementation - you might want to store image paths in your database
+    import os
+    image_dir = os.path.join(app.static_folder, 'uploads')
+    
+    # Check for common image formats
+    for ext in ['.jpg', '.jpeg', '.png', '.gif']:
+        image_path = f"{student_number}{ext}"
+        if os.path.exists(os.path.join(image_dir, image_path)):
+            return image_path
+    
+    return None
+
+@app.route('/update_photo', methods=['POST'])
+@login_required
+def update_photo():
+    if 'student_image' not in request.files:
+        return jsonify({'success': False, 'error': 'No se encontró ninguna imagen'})
+    
+    image = request.files['student_image']
+    if image.filename == '':
+        return jsonify({'success': False, 'error': 'No se seleccionó ninguna imagen'})
+    
+    student_number = session.get('student_number')
+    if not student_number:
+        return jsonify({'success': False, 'error': 'No se encontró el número de estudiante'})
+    
+    try:
+        # Get file extension
+        _, ext = os.path.splitext(image.filename)
+        if not ext:
+            ext = '.png'  # Default to png if no extension
+            
+        # Save with student number as filename
+        image_filename = f"{student_number}{ext}"
+        image_path = os.path.join(app.static_folder, 'uploads', image_filename)
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(image_path), exist_ok=True)
+        
+        # Save the image
+        image.save(image_path)
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"Error saving image: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

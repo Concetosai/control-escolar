@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Control Escolar{% endblock %}</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {% block styles %}{% endblock %}
+    {% block styles %}
     <style>
         /* WhatsApp Floating Button Styles */
         .whatsapp-container {
@@ -44,7 +44,61 @@
         .whatsapp-text {
             font-weight: bold;
         }
+        
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .button:hover {
+            background-color: #45a049;
+        }
+        
+        /* Estilos para el modal de actualización de foto */
+        .photo-update-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
     </style>
+    {% endblock %}
 </head>
 <body>
     {% block content %}{% endblock %}
@@ -63,5 +117,7 @@
         </a>
     </div>
     -->
+    
+    {% block scripts %}{% endblock %}
 </body>
 </html>
