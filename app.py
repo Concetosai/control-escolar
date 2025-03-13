@@ -19,6 +19,15 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+# Force HTTPS in production environment (PythonAnywhere)
+@app.before_request
+def before_request():
+    # Only redirect in production environment
+    if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+        if request.url.startswith('http://'):
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+
 # Define DummyMail class
 class DummyMail:
     def __init__(self, app=None):
@@ -422,8 +431,7 @@ def get_student_image(student_number):
     # Check for common image formats
     for ext in ['.jpg', '.jpeg', '.png', '.gif']:
         image_path = f"{student_number}{ext}"
-        full_path = os.path.join(image_dir, image_path)
-        if os.path.exists(full_path):
+        if os.path.exists(os.path.join(image_dir, image_path)):
             # Return the URL path, not the file system path
             return url_for('static', filename=f'uploads/{image_path}')
     
