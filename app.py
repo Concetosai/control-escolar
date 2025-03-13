@@ -12,6 +12,20 @@ from functools import wraps
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a_strong_random_secret_key_here'  # Change this to a secure random string
 
+# Set absolute paths for uploads and ensure directories exist
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Force HTTPS in production environment (PythonAnywhere)
+@app.before_request
+def before_request():
+    # Only redirect in production environment
+    if 'PYTHONANYWHERE_DOMAIN' in os.environ:
+        if request.url.startswith('http://'):
+            url = request.url.replace('http://', 'https://', 1)
+            return redirect(url, code=301)
+
 # Define DummyMail class
 class DummyMail:
     def __init__(self, app=None):
@@ -410,15 +424,14 @@ def get_qr():
 # Al final del archivo app.py, añade o modifica:
 def get_student_image(student_number):
     # Check if an image exists for this student
-    # This is a simple implementation - you might want to store image paths in your database
-    import os
     image_dir = os.path.join(app.static_folder, 'uploads')
     
     # Check for common image formats
     for ext in ['.jpg', '.jpeg', '.png', '.gif']:
         image_path = f"{student_number}{ext}"
         if os.path.exists(os.path.join(image_dir, image_path)):
-            return image_path
+            # Return the URL path, not the file system path
+            return url_for('static', filename=f'uploads/{image_path}')
     
     return None
 
