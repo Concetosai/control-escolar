@@ -28,6 +28,13 @@ def before_request():
             url = request.url.replace('http://', 'https://', 1)
             return redirect(url, code=301)
 
+# Configuración de la base de datos con ruta absoluta
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'students.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+# Inicializar la base de datos
+db = SQLAlchemy(app)
+
 # Define DummyMail class
 class DummyMail:
     def __init__(self, app=None):
