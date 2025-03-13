@@ -8,23 +8,18 @@ import io
 import os
 from datetime import datetime
 from functools import wraps
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a_strong_random_secret_key_here'  # Change this to a secure random string
 
-# Set absolute paths for uploads and ensure directories exist
+# Configuración de la base de datos con ruta absoluta
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'students.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-# Force HTTPS in production environment (PythonAnywhere)
-@app.before_request
-def before_request():
-    # Only redirect in production environment
-    if 'PYTHONANYWHERE_DOMAIN' in os.environ:
-        if request.url.startswith('http://'):
-            url = request.url.replace('http://', 'https://', 1)
-            return redirect(url, code=301)
+# Inicializar la base de datos
+db = SQLAlchemy(app)
 
 # Define DummyMail class
 class DummyMail:
