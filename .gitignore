@@ -1,7 +1,5 @@
 __pycache__/
+*.pyc
+instance/
 venv/
-virtualenvs/
-exports/
-var/
-*.log
-*.tmp
+.env
