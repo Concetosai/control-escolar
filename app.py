@@ -10,16 +10,14 @@ from datetime import datetime
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
 
+# Create Flask app with absolute static folder path
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'a_strong_random_secret_key_here'  # Change this to a secure random string
 
-# Configuración de la base de datos con ruta absoluta
+# Set absolute paths for database and uploads
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'students.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-
-# Inicializar la base de datos
-db = SQLAlchemy(app)
+app.config['UPLOAD_FOLDER'] = os.path.join(basedir, 'static', 'uploads')
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 # Define DummyMail class
 class DummyMail:
@@ -416,7 +414,7 @@ def get_qr():
     img_io.seek(0)
     return send_file(img_io, mimetype='image/png')
 
-# Al final del archivo app.py, añade o modifica:
+# Update the get_student_image function to use the configured upload folder
 def get_student_image(student_number):
     # Check if an image exists for this student
     image_dir = os.path.join(app.static_folder, 'uploads')
@@ -424,7 +422,8 @@ def get_student_image(student_number):
     # Check for common image formats
     for ext in ['.jpg', '.jpeg', '.png', '.gif']:
         image_path = f"{student_number}{ext}"
-        if os.path.exists(os.path.join(image_dir, image_path)):
+        full_path = os.path.join(image_dir, image_path)
+        if os.path.exists(full_path):
             # Return the URL path, not the file system path
             return url_for('static', filename=f'uploads/{image_path}')
     
@@ -440,9 +439,11 @@ def update_photo():
     if image.filename == '':
         return jsonify({'success': False, 'error': 'No se seleccionó ninguna imagen'})
     
-    student_number = session.get('student_number')
+    student_number = request.form.get('student_number')
     if not student_number:
-        return jsonify({'success': False, 'error': 'No se encontró el número de estudiante'})
+        student_number = session.get('student_number')
+        if not student_number:
+            return jsonify({'success': False, 'error': 'No se encontró el número de estudiante'})
     
     try:
         # Get file extension
@@ -452,7 +453,7 @@ def update_photo():
             
         # Save with student number as filename
         image_filename = f"{student_number}{ext}"
-        image_path = os.path.join(app.static_folder, 'uploads', image_filename)
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], image_filename)
         
         # Create directory if it doesn't exist
         os.makedirs(os.path.dirname(image_path), exist_ok=True)
